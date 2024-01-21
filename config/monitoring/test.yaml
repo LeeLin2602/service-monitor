@@ -1,13 +1,15 @@
 nycu-me-https:
-  command: 'http-check'
+  command: '/usr/lib/monitoring/utils/http-check'
   parameters:
     url: "https://nycu.me/"
     args: "-k"
-  interval: 60
+    expected: 200
+  interval: 10
 
 nycu-me-https-api:
   command: 'http-check'
   parameters:
     url: "https://nycu.me/api/whoami"
     args: "-k"
-  interval: 60
+    expected: 200
+  interval: 10

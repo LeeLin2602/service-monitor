@@ -10,5 +10,5 @@ WORKDIR /usr/src/app
 COPY src/ .
 
 
-CMD [ "python", "./main.py" ]
+CMD [ "python", "-u" ,"./main.py"]
 # CMD [ "/bin/sh", "-c", "ls -ls && pwd" ]

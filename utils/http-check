@@ -1,3 +1,11 @@
-http_code=$(curl -o /dev/null -w '%{http_code}' $URL 2>/dev/null)
-echo $http_code
+#!/bin/sh
 
+http_code=$(curl -o /dev/null ${args} -w '%{http_code}' "${url}" 2>/dev/null)
+
+if [ "${http_code}" -eq "${expected}" ]; then
+    echo "${expected} OK!"
+    exit 0
+else
+    echo "Received unexpected HTTP code ${http_code}."
+    exit 1  
+fi

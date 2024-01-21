@@ -1,0 +1,3 @@
+http_code=$(curl -o /dev/null -w '%{http_code}' $URL 2>/dev/null)
+echo $http_code
+

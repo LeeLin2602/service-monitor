@@ -1,0 +1,8 @@
+version: '3.8'
+
+services:
+  monitor:
+    build: ./monitor
+    volumes:
+      - ./config/monitoring/:/etc/monitoring/configs
+      - ./utils:/usr/lib/monitoring/utils

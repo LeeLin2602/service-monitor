@@ -1,0 +1,10 @@
+#!/bin/sh
+
+dig nycu.me @$nameserver >/dev/null 2>/dev/null
+result=$?
+
+if [ $result -eq 0 ]; then
+    exit 0
+else
+    exit 4
+fi

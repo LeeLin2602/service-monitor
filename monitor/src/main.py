@@ -6,18 +6,27 @@ import subprocess
 import threading
 import queue
 import time
+import mail
+import config
 
+
+def read_yaml(path):
+    data = {}
+    with open(path) as config:
+        conf = yaml.safe_load(config)
+        for unit in conf:
+            if unit in data:
+                print("conflict service:", unit)
+            data[unit] = conf[unit]
+    return data
 
 def list_services(directory):
     services = {}
     for root, dirs, files in os.walk(directory):
         for name in files:
-            with open(os.path.join(root, name)) as config:
-                conf = yaml.safe_load(config)
-                for service in conf:
-                    if service in services:
-                        print("conflict service:", service)
-                    services[service] = conf[service]
+            path = os.path.join(root, name)
+            if path.endswith(".yaml") or path.endswith(".yml"):
+                services.update(read_yaml(path))
     return services
 
 def run_subprocess(service):
@@ -53,8 +62,31 @@ def check_services(services, cursor, service_queue):
     for service in services:
         service_queue.put(service[0])
 
+def update_fail_db(service, result):
+    global mail_service, service_fail_log, contact_groups
 
+    print(service['service'], ":", result)
+    
+    if service_fail_log[service['service']] != result[0]:
+        subject = f"{service['service']} status changed!"
+        status_mapping = {-1: "pending",
+                          0: "healthy", 
+                          1: "unknown", 
+                          2: "warning",
+                          3: "danger",
+                          4: "dead"}
+        body = f"From {status_mapping[service_fail_log[service['service']]]} " + \
+               f"To {status_mapping[result[0]]}, with message: {result[1]}."
+        for group in service['notify']:
+            recepients = contact_groups[group]
+            for recepient in recepients['members']:
+                mail_service.send_mail(recepient, subject, body)
+    
+    service_fail_log[service['service']] = result[0]
+
+mail_service = mail.MailService(config.SMTP_SERVER, config.SMTP_PORT, config.SMTP_USER, config.SMTP_PASS, config.SMTP_FROM)
 service_queue = queue.Queue()
+service_fail_log = {}
 conn = sqlite3.connect(':memory:')
 cursor = conn.cursor()
 cursor.execute("""
@@ -65,21 +97,20 @@ cursor.execute("""
     );
 """)
 
-
+contact_groups = read_yaml("/etc/monitoring/notify_group.yaml")
 services = list_services("/etc/monitoring/configs")
 
 for service in services:
+    service_fail_log[service] = -1
     services[service]['service'] = service
     service = services[service]
     cursor.execute("INSERT INTO service_status (service, polltime, waiting) VALUES (?, ?, ?)", (service['service'], datetime.now(), 0))
-
 conn.commit()
 
 while True:
     check_services(services, cursor, service_queue)
     while not service_queue.empty():
         service = services[service_queue.get()]
-        
-        print(service['service'], run_subprocess(service))
-    
+        result = run_subprocess(service)
+        update_fail_db(service, result)
     time.sleep(1)

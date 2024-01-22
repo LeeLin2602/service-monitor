@@ -11,4 +11,3 @@ COPY src/ .
 
 
 CMD [ "python", "-u" ,"./main.py"]
-# CMD [ "/bin/sh", "-c", "ls -ls && pwd" ]

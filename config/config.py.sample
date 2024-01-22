@@ -1,0 +1,6 @@
+#Email
+SMTP_SERVER = r"mail.nycu.me"
+SMTP_PORT   = 25
+SMTP_USER   = r"no-reply"
+SMTP_PASS   = r""
+SMTP_FROM   = r"no-reply@mail.nycu.me"

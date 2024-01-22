@@ -5,4 +5,6 @@ services:
     build: ./monitor
     volumes:
       - ./config/monitoring/:/etc/monitoring/configs
+      - ./config/notify_group.yaml:/etc/monitoring/notify_group.yaml
+      - ./config/config.py:/usr/src/app/config.py
       - ./utils:/usr/lib/monitoring/utils

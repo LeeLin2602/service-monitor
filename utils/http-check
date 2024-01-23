@@ -1,11 +1,12 @@
 #!/bin/sh
 
-http_code=$(curl -o /dev/null ${args} -w '%{http_code}' "${url}" 2>/dev/null)
-
 if [ "${http_code}" -eq "${expected}" ]; then
     echo "${expected} OK!"
     exit 0
+elif [ "${http_code}" -eq "000" ]; then
+    echo "Unable to access this url."
+    exit 4
 else
     echo "Received unexpected HTTP code ${http_code}."
-    exit 1  
+    exit 2
 fi

@@ -1,5 +1,7 @@
 #!/bin/sh
 
+http_code=$(curl -o /dev/null ${args} -w '%{http_code}' "${url}" 2>/dev/null)
+
 if [ "${http_code}" -eq "${expected}" ]; then
     echo "${expected} OK!"
     exit 0
